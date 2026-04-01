@@ -9,6 +9,7 @@ import { useEffect, useContext } from 'react'
 import { SocketContext } from '../context/SocketContext'
 import { CaptainDataContext } from '../context/CapatainContext'
 import axios from 'axios'
+import LiveTracking from '../components/LiveTracking'
 
 const CaptainHome = () => {
 
@@ -45,15 +46,20 @@ const CaptainHome = () => {
         const locationInterval = setInterval(updateLocation, 10000)
         updateLocation()
 
-        // return () => clearInterval(locationInterval)
+        return () => clearInterval(locationInterval)
     }, [])
 
-    socket.on('new-ride', (data) => {
+    useEffect(() => {
+        socket.on('new-ride', (data) => {
+            console.log('New ride received:', data)
+            setRide(data)
+            setRidePopupPanel(true)
+        })
 
-        setRide(data)
-        setRidePopupPanel(true)
-
-    })
+        return () => {
+            socket.off('new-ride')
+        }
+    }, [])
 
     async function confirmRide() {
 
@@ -108,8 +114,7 @@ const CaptainHome = () => {
                 </Link>
             </div>
             <div className='h-3/5'>
-                <img className='h-full w-full object-cover' src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif" alt="" />
-
+                <LiveTracking />
             </div>
             <div className='h-2/5 p-6'>
                 <CaptainDetails />

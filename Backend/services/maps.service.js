@@ -75,16 +75,15 @@ module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
 
     // radius in km
 
+    // Calculate bounding box for initial filtering
+    const latDelta = radius / 111; // 1 degree latitude ≈ 111 km
+    const lngDelta = radius / (111 * Math.cos(ltd * Math.PI / 180));
 
     const captains = await captainModel.find({
-        location: {
-            $geoWithin: {
-                $centerSphere: [ [ ltd, lng ], radius / 6371 ]
-            }
-        }
+        'location.ltd': { $gte: ltd - latDelta, $lte: ltd + latDelta },
+        'location.lng': { $gte: lng - lngDelta, $lte: lng + lngDelta }
     });
 
     return captains;
-
 
 }
