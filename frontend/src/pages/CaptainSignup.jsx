@@ -61,7 +61,14 @@ const CaptainSignup = () => {
   return (
     <div className='py-5 px-5 h-screen flex flex-col justify-between'>
       <div>
-        <img className='w-20 mb-3' src="https://www.svgrepo.com/show/505031/uber-driver.svg" alt="" />
+        <div className='flex items-center gap-2 mb-3'>
+          <div className='w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center shadow-lg shadow-amber-500/20'>
+            <span className='text-amber-950 font-black text-xl italic'>P</span>
+          </div>
+          <span className='text-2xl pushpak-logo'>
+            Pushpak
+          </span>
+        </div>
 
         <form onSubmit={(e) => {
           submitHandler(e)
