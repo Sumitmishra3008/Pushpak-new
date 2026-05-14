@@ -46,6 +46,21 @@ module.exports.createRide = async (req, res) => {
 
 };
 
+module.exports.shareRide = async (req,res) =>{
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+        return res.status(400).json({ errors: errors.array() });
+    }
+    const { pickup, destination, vehicleType, delayConstraint } = req.body;
+    
+    try{
+
+    }catch(err){
+        console.log('shareRide error:', err);
+        return res.status(500).json({ message: err.message });
+    }
+}
+
 module.exports.getFare = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -93,6 +108,7 @@ module.exports.startRide = async (req, res) => {
     }
 
     const { rideId, otp } = req.query;
+    console.log('startRide - received request with rideId:', rideId, 'otp:', otp);
 
     try {
         const ride = await rideService.startRide({ rideId, otp, captain: req.captain });

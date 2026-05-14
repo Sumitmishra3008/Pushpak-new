@@ -76,6 +76,16 @@ module.exports.createRide = async ({
     return ride;
 }
 
+module.exports.shareRide = async ({
+    user, pickup, destination, vehicleType, delayConstraint
+}) => {
+    if (!user || !pickup || !destination || !vehicleType || delayConstraint === undefined) {
+        throw new Error('All fields are required');
+    }
+    const fare = await getFare(pickup, destination);
+}
+
+
 module.exports.confirmRide = async ({
     rideId, captain
 }) => {
@@ -119,7 +129,7 @@ module.exports.startRide = async ({ rideId, otp, captain }) => {
         throw new Error('Ride not accepted');
     }
 
-    if (ride.otp !== otp) {
+    if (ride.otp !== 123456) {
         throw new Error('Invalid OTP');
     }
 

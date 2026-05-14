@@ -1,11 +1,46 @@
 import React from 'react'
 
 const ConfirmRide = (props) => {
+    // Use parent-provided setters directly; do not keep local state here.
+
     return (
-        <div>
+        <div className="relative">
             <h5 className='p-1 text-center w-[93%] absolute top-0' onClick={() => {
                 props.setConfirmRidePanel(false)
             }}><i className="text-3xl text-gray-200 ri-arrow-down-wide-line"></i></h5>
+
+            <div className="absolute top-0 right-0 p-2 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <span className="text-xs">Share</span>
+                    <input
+                        type="checkbox"
+                        checked={Boolean(props.sharing)}
+                        onChange={(e) => {
+                            const on = e.target.checked
+                            if (typeof props.setSharing === 'function') props.setSharing(on)
+                            if (!on && typeof props.setSharingDelayConstraint === 'function') props.setSharingDelayConstraint(0)
+                        }}
+                        className="w-5 h-5"
+                    />
+                </label>
+                {props.sharing && (
+                    <label className="flex items-center gap-1 text-sm text-gray-700">
+                        <span className="text-xs">Delay (min)</span>
+                        <select
+                            defaultValue={Number(props.sharingDelayConstraint) || 0}
+                            onChange={(e) => {
+                                const val = Number(e.target.value)
+                                if (typeof props.setSharingDelayConstraint === 'function') props.setSharingDelayConstraint(val)
+                            }}
+                            className="bg-white border rounded px-2 py-1 text-sm"
+                        >
+                            {Array.from({ length: 31 }, (_, i) => (
+                                <option key={i} value={i}>{i}</option>
+                            ))}
+                        </select>
+                    </label>
+                )}
+            </div>
             <h3 className='text-2xl font-semibold mb-5'>Confirm your Ride</h3>
 
             <div className='flex gap-2 justify-between flex-col items-center'>

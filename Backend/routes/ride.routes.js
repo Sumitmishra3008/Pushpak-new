@@ -13,6 +13,15 @@ router.post('/create',
     rideController.createRide
 )
 
+router.post('/shareRide',
+    authMiddleware.authUser,
+    body('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
+    body('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
+    body('vehicleType').isString().isIn([ 'auto', 'car', 'moto' ]).withMessage('Invalid vehicle type'),
+    body('delayConstraint').isInt({ min: 0 }).withMessage('Delay constraint must be greater than or equal to 0'),
+    rideController.shareRide
+)
+
 router.get('/get-fare',
     authMiddleware.authUser,
     query('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),

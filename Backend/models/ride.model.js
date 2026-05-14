@@ -11,6 +11,14 @@ const rideSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'captain',
     },
+    sharing:{
+        type: Boolean,
+        default: false,  
+    },
+    sharingDelayConstraint: {
+        type: Number,
+        default: 0,
+    }, // in minutes, only for shared rides
     pickup: {
         type: String,
         required: true,

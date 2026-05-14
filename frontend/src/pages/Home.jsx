@@ -34,6 +34,8 @@ const Home = () => {
     const [ fare, setFare ] = useState({})
     const [ vehicleType, setVehicleType ] = useState(null)
     const [ ride, setRide ] = useState(null)
+    const [sharing, setSharing] = useState(false)
+    const [sharingDelayConstraint, setSharingDelayConstraint] = useState(0)
 
     const navigate = useNavigate()
 
@@ -272,6 +274,10 @@ const Home = () => {
                     destination={destination}
                     fare={fare}
                     vehicleType={vehicleType}
+                    sharing={sharing}
+                    setSharing={setSharing}
+                    sharingDelayConstraint={sharingDelayConstraint}
+                    setsharingDelayConstraint={setSharingDelayConstraint}
 
                     setConfirmRidePanel={setConfirmRidePanel} setVehicleFound={setVehicleFound} />
             </div>
