@@ -47,6 +47,10 @@ const captainSchema = new mongoose.Schema({
             required: true,
             minlength: [ 3, 'Plate must be at least 3 characters long' ],
         },
+        // vehiclenumber: {
+        //     type: String,
+        //     minlength: [ 3, 'Vehicle number must be at least 3 characters long' ],
+        // },
         capacity: {
             type: Number,
             required: true,
@@ -84,6 +88,9 @@ captainSchema.methods.comparePassword = async function (password) {
 captainSchema.statics.hashPassword = async function (password) {
     return await bcrypt.hash(password, 10);
 }
+
+// Ensure unique vehicle number when present; allow multiple documents without the field
+// captainSchema.index({ 'vehicle.vehiclenumber': 1 }, { unique: true, sparse: true });
 
 const captainModel = mongoose.model('captain', captainSchema)
 

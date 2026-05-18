@@ -23,6 +23,8 @@ module.exports.createRide = async (req, res) => {
         const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
         console.log('createRide - pickupCoordinates:', pickupCoordinates);
 
+        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
+
         let sharingCaptains ;
 
         if(sharing){
@@ -32,9 +34,7 @@ module.exports.createRide = async (req, res) => {
                 console.log('createRide - sending share-ride to captain:', captain.captainId, 'socketId:', captain.socketId);
                 sendMessageToSocketId(captain.socketId, {
                     event: 'share-ride',
-                    data: {
-                        rideId: ride._id,
-                    }
+                    data: rideWithUser
                 });
             });
         }
@@ -47,8 +47,6 @@ module.exports.createRide = async (req, res) => {
         console.log('createRide - captainsInRadius:', captainsInRadius.length, captainsInRadius.map(c => ({ id: c._id, socketId: c.socketId, location: c.location })));
 
         ride.otp = ""
-
-        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
 
         captainsInRadius.map(captain => {
             console.log('createRide - sending new-ride to captain:', captain._id, 'socketId:', captain.socketId);
