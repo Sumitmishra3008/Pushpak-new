@@ -18,7 +18,7 @@ const ConfirmRide = (props) => {
                         onChange={(e) => {
                             const on = e.target.checked
                             if (typeof props.setSharing === 'function') props.setSharing(on)
-                            if (!on && typeof props.setSharingDelayConstraint === 'function') props.setSharingDelayConstraint(0)
+                            if (!on && typeof props.setsharingDelayConstraint === 'function') props.setsharingDelayConstraint(0)
                         }}
                         className="w-5 h-5"
                     />
@@ -30,7 +30,7 @@ const ConfirmRide = (props) => {
                             defaultValue={Number(props.sharingDelayConstraint) || 0}
                             onChange={(e) => {
                                 const val = Number(e.target.value)
-                                if (typeof props.setSharingDelayConstraint === 'function') props.setSharingDelayConstraint(val)
+                                if (typeof props.setsharingDelayConstraint === 'function') props.setsharingDelayConstraint(val)
                             }}
                             className="bg-white border rounded px-2 py-1 text-sm"
                         >

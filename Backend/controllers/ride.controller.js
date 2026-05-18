@@ -11,17 +11,38 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { pickup, destination, vehicleType } = req.body;
+    const { pickup, destination, vehicleType , sharing, sharingDelayConstraint } = req.body;
+    console.log('createRide - received request with:', { pickup, destination, vehicleType, sharing, sharingDelayConstraint });
 
     try {
         console.log('createRide - req.user:', req.user);
-        const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType });
+        const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType, sharing, sharingDelayConstraint });
         console.log('createRide - ride created:', ride._id);
         res.status(201).json(ride);
 
         const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
         console.log('createRide - pickupCoordinates:', pickupCoordinates);
 
+        let sharingCaptains ;
+
+        if(sharing){
+            sharingCaptains = await mapService.getShareRideMatches(pickup, destination, vehicleType, sharingDelayConstraint);
+            console.log('createRide - sharingCaptains:', sharingCaptains.length, sharingCaptains.map(c => ({ id: c._id, socketId: c.socketId, location: c.location })));
+            sharingCaptains.map(captain => {
+                console.log('createRide - sending share-ride to captain:', captain.captainId, 'socketId:', captain.socketId);
+                sendMessageToSocketId(captain.socketId, {
+                    event: 'share-ride',
+                    data: {
+                        rideId: ride._id,
+                    }
+                });
+            });
+        }
+
+        if(sharingCaptains && sharingCaptains.length > 0){
+            console.log('createRide - skipping new-ride notifications due to sharing matches');
+            return;
+        }
         const captainsInRadius = await mapService.getCaptainsInTheRadius(pickupCoordinates.ltd, pickupCoordinates.lng, 2);
         console.log('createRide - captainsInRadius:', captainsInRadius.length, captainsInRadius.map(c => ({ id: c._id, socketId: c.socketId, location: c.location })));
 

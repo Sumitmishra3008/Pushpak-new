@@ -1,5 +1,6 @@
 const axios = require('axios');
 const captainModel = require('../models/captain.model');
+const rideModel = require('../models/ride.model');
 
 module.exports.getAddressCoordinate = async (address) => {
     const apiKey = process.env.GOOGLE_MAPS_API;
@@ -71,6 +72,76 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
     }
 }
 
+module.exports.getShareRideMatches = async ( pickup,destination, vehicleType, delayConstraint) =>{
+        console.log('getShareRideMatches called with:', { pickup, destination, vehicleType, delayConstraint });
+        if (!pickup || !destination || !vehicleType || delayConstraint === undefined) {
+        throw new Error('All fields are required');
+    }
+    const rides = await rideModel.find({
+        sharing: true,
+        captain: { $ne: null },
+        status: { $in: [ 'accepted', 'ongoing' ] }
+    }).lean();
+
+    const matches = [];
+
+    for (const oldRide of rides) {
+        try {
+            const captain = await captainModel.findById(oldRide.captain).lean();
+            if (!captain) continue;
+            if (vehicleType && captain.vehicle && captain.vehicle.vehicleType !== vehicleType) continue;
+
+            const driverLoc = `${captain.location.ltd},${captain.location.lng}`;
+
+            const getSec = async (orig, dest) => {
+                const res = await module.exports.getDistanceTime(orig, dest);
+                return res && res.duration && res.duration.value ? res.duration.value : 0; // seconds
+            }
+
+            const t_driver_oldDest = await getSec(driverLoc, oldRide.destination);
+            const t_driver_newPickup = await getSec(driverLoc, pickup);
+            const t_newPickup_oldDest = await getSec(pickup, oldRide.destination);
+            const t_oldDest_newDest = await getSec(oldRide.destination, destination);
+            const t_newPickup_newDest = await getSec(pickup, destination);
+            const t_newDest_oldDest = await getSec(destination, oldRide.destination);
+
+            // Scenario 1: delayA = (driver -> newPickup -> oldDest) - (driver -> oldDest)
+            const delayA = (t_driver_newPickup + t_newPickup_oldDest) - t_driver_oldDest;
+
+            // routeA_extra: pickup -> oldDest -> newDest total travel time
+            const routeA_extra = t_newPickup_oldDest + t_oldDest_newDest-t_newPickup_newDest;
+
+            // Scenario 2: driver -> newPickup -> newDest -> oldDest - (driver -> oldDest)
+            const delay2 = (t_driver_newPickup + t_newPickup_newDest + t_newDest_oldDest) - t_driver_oldDest;
+
+            const rideConstraintSec = (oldRide.sharingDelayConstraint || 0) * 60;
+            const providedConstraintSec = (delayConstraint || 0) * 60;
+
+            // Accept if any of the described conditions are met:
+            // - Scenario1: delayA <= oldRide.sharingDelayConstraint AND routeA_extra <= provided delayConstraint
+            // - Scenario2: delay2 <= oldRide.sharingDelayConstraint
+            if ((delayA <= rideConstraintSec && routeA_extra <= providedConstraintSec) || delay2 <= rideConstraintSec) {
+                matches.push({
+                    rideId: oldRide._id,
+                    captainId: captain._id,
+                    socketId: captain.socketId,
+                    driverLocation: captain.location,
+                    delayA,
+                    routeA_extra,
+                    delay2,
+                    rideConstraintSec,
+                    providedConstraintSec
+                });
+            }
+        } catch (err) {
+            console.error('Error evaluating share match for ride', oldRide._id, err);
+            continue;
+        }
+    }
+
+    return matches;
+}
+
 module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
 
     // radius in km
@@ -87,4 +158,5 @@ module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
     return captains;
 
 }
+
 

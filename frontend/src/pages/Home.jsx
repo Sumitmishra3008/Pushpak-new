@@ -191,10 +191,13 @@ const Home = () => {
     }
 
     async function createRide() {
+        console.log({ pickup, destination, vehicleType, sharing, sharingDelayConstraint });
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create`, {
             pickup,
             destination,
-            vehicleType
+            vehicleType,
+            sharing,
+            sharingDelayConstraint
         }, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`

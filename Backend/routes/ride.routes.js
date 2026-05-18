@@ -10,6 +10,8 @@ router.post('/create',
     body('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
     body('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
     body('vehicleType').isString().isIn([ 'auto', 'car', 'moto' ]).withMessage('Invalid vehicle type'),
+    body('sharing').optional().isBoolean().withMessage('Sharing must be a boolean'),
+    body('sharingDelayConstraint').optional().isInt({ min: 0 }).withMessage('Sharing delay constraint must be a non-negative integer'),
     rideController.createRide
 )
 
